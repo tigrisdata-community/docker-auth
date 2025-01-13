@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: self-hosted-docker-registry
+  labels:
+    app.kubernetes.io/name: self-hosted-docker-registry
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: self-hosted-docker-registry
+  replicas: 1
+  template:      
+    metadata:
+      labels:
+        app.kubernetes.io/name: self-hosted-docker-registry
+    spec:
+      securityContext:
+        fsGroup: 1000
+      volumes:
+      - name: certs
+        secret:
+          secretName: registry-certs
+      containers:
+      - name: registry
+        image: registry:2
+        imagePullPolicy: "Always"
+        envFrom:
+        - secretRef:
+            name: registry-secrets
+        - configMapRef:
+            name: registry-config
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5007
+              httpHeaders:
+                - name: X-Kubernetes
+                  value: "is kinda okay"
+            initialDelaySeconds: 3
+            periodSeconds: 3
+        volumeMounts:
+        - name: "certs"
+          mountPath: "/run/secrets/certs"
+          readOnly: true
+        ports:
+          

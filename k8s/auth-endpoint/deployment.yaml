@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-endpoint
+spec:
+  selector:
+    matchLabels:
+      app: auth-endpoint
+  template:
+    metadata:
+      labels:
+        app: auth-endpoint
+    spec:
+      volumes:
+      - name: certs
+        secret:
+          secretName: auth-endpoint-certs
+      securityContext:
+        fsGroup: 1000
+      containers:
+      - name: auth-endpoint
+        image: ghcr.io/tigrisdata-community/self-hosted-docker-registry/auth-endpoint:latest
+        envFrom:
+        - configMapRef:
+            name: auth-endpoint-config
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5007
+              httpHeaders:
+                - name: X-Kubernetes
+                  value: "is kinda okay"
+            initialDelaySeconds: 3
+            periodSeconds: 3
+        volumeMounts:
+        - name: "certs"
+          mountPath: "/run/secrets/certs"
+          readOnly: true
+        ports:
+        - containerPort: 5007
+          name: http

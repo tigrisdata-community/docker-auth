@@ -1,0 +1,75 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+secretGenerator:
+# certificates
+- name: auth-endpoint-certs
+  files:
+  - certs/anu.pem
+  - certs/anu.key
+
+- name: registry-certs
+  files:
+  - certs/anu.pem
+
+# registry secrets
+- name: registry-secrets
+  envs:
+  - registry-secrets.env
+
+configMapGenerator:
+- name: auth-endpoint-config
+  literals:
+  - SLOG_LEVEL=info
+  - CERT_FNAME=/run/secrets/certs/anu.pem
+  - KEY_FNAME=/run/secrets/certs/anu.key
+  - BIND=:5007
+  envs:
+  - auth-endpoint.env
+
+- name: registry-config
+  envs:
+  - registry.env
+  literals:
+  - REGISTRY_AUTH=token
+  - REGISTRY_AUTH_TOKEN_ISSUER=Tigris Anu
+  - REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE=/run/secrets/certs/anu.pem
+  - REGISTRY_AUTH_TOKEN_SERVICE=Authentication
+  - REGISTRY_HTTP_DEBUG_ADDR=:5001
+  - REGISTRY_HTTP_DEBUG_PROMETHEUS_ENABLED=true
+  - REGISTRY_HTTP_DEBUG_PROMETHEUS_PATH=/metrics
+  - REGISTRY_STORAGE=s3
+  - REGISTRY_STORAGE_S3_CHUNKSIZE=5242880
+  - REGISTRY_STORAGE_S3_ENCRYPT=false
+  - REGISTRY_STORAGE_S3_FORCEPATHSTYLE=false
+  - REGISTRY_STORAGE_S3_REGION=auto
+  - REGISTRY_STORAGE_S3_REGIONENDPOINT=https://fly.storage.tigris.dev
+  - REGISTRY_STORAGE_S3_ROOTDIRECTORY=/
+  - REGISTRY_STORAGE_S3_SECURE=true
+  - REGISTRY_STORAGE_S3_V4AUTH=true
+
+- name: self-hosted-docker-registry
+  envs:
+  - toplevel.env
+
+resources:
+- auth-endpoint/deployment.yaml
+- auth-endpoint/service.yaml
+- ingress.yaml
+- registry/deployment.yaml
+- registry/service.yaml
+
+replacements:
+- source:
+    kind: ConfigMap
+    version: v1
+    name: self-hosted-docker-registry
+    fieldPath: data.INGRESS_HOSTNAME
+  targets:
+  - select:
+      kind: Ingress
+      name: self-hosted-docker-registry
+    fieldPaths:
+    - spec.rules.0.host
+    - spec.rules.1.host
+    - spec.tls.0.hosts.0
