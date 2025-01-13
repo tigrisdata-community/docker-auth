@@ -1,10 +1,12 @@
-# docker-auth
+# self-hosted-docker-registry
 
 The Tigris-backed Docker Registry, including authentication with Tigris.
 
-## Deploying docker-auth
+## Deploying self-hosted-docker-registry
 
-The easiest deployment target for docker-registry-auth is on [fly.io](https://fly.io), but in theory it should work on any cloud platform. Here's what you need:
+You can host a performant docker registry backed by Tigris on just about any cloud.
+
+Here's what you need:
 
 - An account on [Tigris](https://console.tigris.dev)
 - A [Tigris bucket](https://storage.new) (such as `mybucket`), this is where all your docker images will be stored. This guide will call it `mybucket`.
@@ -14,6 +16,21 @@ The easiest deployment target for docker-registry-auth is on [fly.io](https://fl
   - `flyctl`
   - `skopeo`
   - The [Docker desktop app](https://www.docker.com/products/docker-desktop/) or a locally installed Docker daemon (on Linux)
+
+## Deploying on Kubernetes
+
+Run `install.sh` in the k8s folder:
+
+```
+$ ./install.sh
+Usage: ./install.sh <bucket-name> <access-key> <secret-key> <ingress-hostname>
+```
+
+```
+$ ./install.sh anu-test tid_azurediamond tsec_hunter2 reg.acme.co
+```
+
+## Deploying on fly.io
 
 Here are the steps:
 

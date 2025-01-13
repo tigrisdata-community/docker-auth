@@ -46,15 +46,6 @@ spec:
             - ALL
           seccompProfile:
             type: RuntimeDefault
-        livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 5007
-              httpHeaders:
-                - name: X-Kubernetes
-                  value: "is kinda okay"
-            initialDelaySeconds: 3
-            periodSeconds: 3
         volumeMounts:
         - name: "certs"
           mountPath: "/run/secrets/certs"
