@@ -1,69 +1,73 @@
-# fly.toml app configuration file generated for registrxe on 2024-12-17T09:23:25-05:00
+# fly.toml app configuration file generated for docker-auth-registry-dev on 2025-01-13T11:35:18-05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'anu-registry'
+app = 'docker-auth-registry-dev'
+primary_region = 'iad'
 
 [build]
-image = 'registry:2'
-
-[experimental]
-#cmd = ["sleep", "inf"]
+  image = 'registry:2'
 
 [env]
-REGISTRY_STORAGE = "s3"
-REGISTRY_STORAGE_S3_REGION = "auto"
-REGISTRY_STORAGE_S3_REGIONENDPOINT = "https://fly.storage.tigris.dev"
-REGISTRY_STORAGE_S3_FORCEPATHSTYLE = "false"
-REGISTRY_STORAGE_S3_ENCRYPT = "false"
-REGISTRY_STORAGE_S3_SECURE = "true"
-REGISTRY_STORAGE_S3_V4AUTH = "true"
-REGISTRY_STORAGE_S3_CHUNKSIZE = "5242880"
-REGISTRY_STORAGE_S3_ROOTDIRECTORY = "/"
-REGISTRY_AUTH = "token"
-REGISTRY_AUTH_TOKEN_SERVICE = "Authentication"
-REGISTRY_AUTH_TOKEN_ISSUER = "Tigris Anu"
-REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE = "/data/anu.pem"
-REGISTRY_HTTP_DEBUG_ADDR = ":5001"
-REGISTRY_HTTP_DEBUG_PROMETHEUS_ENABLED = "true"
-REGISTRY_HTTP_DEBUG_PROMETHEUS_PATH = "/metrics"
-
-[[files]]
-guest_path = "/data/anu.pem"
-secret_name = "JWT_CERT_B64"
-
-[[metrics]]
-port = 5001
-path = "/metrics"
+  REGISTRY_AUTH = 'token'
+  REGISTRY_AUTH_TOKEN_ISSUER = 'Tigris Anu'
+  REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE = '/data/anu.pem'
+  REGISTRY_AUTH_TOKEN_SERVICE = 'Authentication'
+  REGISTRY_HTTP_DEBUG_ADDR = ':5001'
+  REGISTRY_HTTP_DEBUG_PROMETHEUS_ENABLED = 'true'
+  REGISTRY_HTTP_DEBUG_PROMETHEUS_PATH = '/metrics'
+  REGISTRY_STORAGE = 's3'
+  REGISTRY_STORAGE_S3_CHUNKSIZE = '5242880'
+  REGISTRY_STORAGE_S3_ENCRYPT = 'false'
+  REGISTRY_STORAGE_S3_FORCEPATHSTYLE = 'false'
+  REGISTRY_STORAGE_S3_REGION = 'auto'
+  REGISTRY_STORAGE_S3_REGIONENDPOINT = 'https://fly.storage.tigris.dev'
+  REGISTRY_STORAGE_S3_ROOTDIRECTORY = '/'
+  REGISTRY_STORAGE_S3_SECURE = 'true'
+  REGISTRY_STORAGE_S3_V4AUTH = 'true'
 
 [[services]]
-protocol = 'tcp'
-internal_port = 5000
-auto_stop_machines = 'stop'
-auto_start_machines = true
-min_machines_running = 0
-processes = ['app']
+  protocol = 'tcp'
+  internal_port = 5000
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
 
-[[services.http_checks]]
-interval = 10000
-grace_period = "5s"
-method = "GET"
-path = "/"
-protocol = "http"
-timeout = 2000
-tls_skip_verify = false
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+    force_https = true
 
-[[services.ports]]
-port = 80
-handlers = ['http']
-force_https = true
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
 
-[[services.ports]]
-port = 443
-handlers = ['tls', 'http']
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 1000
+    soft_limit = 750
 
-[services.concurrency]
-type = 'connections'
-hard_limit = 1000
-soft_limit = 750
+  [[services.http_checks]]
+    interval = '10s'
+    timeout = '2s'
+    grace_period = '5s'
+    method = 'GET'
+    path = '/'
+    protocol = 'http'
+    tls_skip_verify = false
+
+[[files]]
+  guest_path = '/data/anu.pem'
+  secret_name = 'JWT_CERT_B64'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[[metrics]]
+  port = 5001
+  path = '/metrics'
+  https = false

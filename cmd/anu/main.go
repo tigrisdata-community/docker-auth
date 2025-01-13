@@ -82,5 +82,7 @@ func (h *httpAuthenticator) Authenticate(ctx context.Context, username, password
 		return fmt.Errorf("user does not have access to bucket %s", *bucketName)
 	}
 
+	slog.Debug("auth complete", "status", "pass")
+
 	return nil
 }

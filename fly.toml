@@ -1,38 +1,35 @@
-# fly.toml app configuration file generated for anu on 2024-12-17T09:08:06-05:00
+# fly.toml app configuration file generated for docker-auth-endpoint-dev on 2025-01-13T11:31:01-05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'anu'
-primary_region = 'yul'
+app = 'docker-auth-endpoint-dev'
+primary_region = 'iad'
 
 [build]
 
+[env]
+  CERT_FNAME = '/tmp/anu.pem'
+  KEY_FNAME = '/tmp/anu.key'
+  SLOG_LEVEL = 'info'
+
 [http_service]
-internal_port = 5007
-force_https = true
-auto_stop_machines = 'stop'
-auto_start_machines = true
-min_machines_running = 0
-processes = ['app']
+  internal_port = 5007
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[files]]
+  guest_path = '/tmp/anu.pem'
+  secret_name = 'JWT_CERT_B64'
+
+[[files]]
+  guest_path = '/tmp/anu.key'
+  secret_name = 'JWT_KEY_B64'
 
 [[vm]]
-memory = '1gb'
-cpu_kind = 'shared'
-cpus = 1
-
-[experimental]
-#cmd = ["sleep", "inf"]
-
-[[files]]
-guest_path = "/tmp/anu.pem"
-secret_name = "JWT_CERT_B64"
-
-[[files]]
-guest_path = "/tmp/anu.key"
-secret_name = "JWT_KEY_B64"
-
-[env]
-CERT_FNAME = "/tmp/anu.pem"
-KEY_FNAME = "/tmp/anu.key"
-SLOG_LEVEL = "info"
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
