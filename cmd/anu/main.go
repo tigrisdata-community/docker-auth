@@ -48,6 +48,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "OK")
+	})
+
 	http.Handle("/auth", srv)
 	slog.Info("listening", "bind", *bind)
 	if err := http.ListenAndServe(*bind, nil); err != nil {
