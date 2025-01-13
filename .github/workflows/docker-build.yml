@@ -6,6 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  OWNER: tigrisdata-community
   IMAGE_NAME: ${{ github.repository }}/auth-endpoint
 
 jobs:
